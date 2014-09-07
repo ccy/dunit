@@ -456,6 +456,6 @@ end;
 
 {$IF CompilerVersion >= 24.0}
 {$LEGACYIFEND OFF}
-{$IFEND}
+{$ENDIF}
 end.
 
