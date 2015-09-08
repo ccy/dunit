@@ -3904,7 +3904,7 @@ end;
 
 class function TConverter<T>.ToString(Value: T): string;
 begin
-  Result := ValueToString(TypeInfo(T), SizeOf(T), {$IFNDEF CLR}@{$ENDIF}Value);
+  Result := ValueToString({$IFDEF CLR}Borland.Delphi.System.{$ENDIF}TypeInfo(T), SizeOf(T), {$IFNDEF CLR}@{$ENDIF}Value);
 end;
 
 { TGenericTestCase }
