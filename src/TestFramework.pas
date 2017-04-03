@@ -901,9 +901,6 @@ uses
 {$IFDEF madExcept}
   madStackTrace,
 {$ENDIF}
-{$IFDEF LINUX}
-  Libc;
-{$ENDIF}
 {$IF defined(ANDROID)}
   Androidapi.jni, Androidapi.NativeActivity, Androidapi.Helpers,
   Androidapi.IOUtils, Androidapi.JNI.JavaTypes,
@@ -952,6 +949,9 @@ begin
   // Hardcoded to External
   Result := GetExternalFilesDir + PathDelim;
 {$ENDIF ANDROID}
+{$IFDEF LINUX}
+   Result := ExpandFileName(Format('%s.%1:s', [ExtractFilePath(ParamStr(0)),PathDelim])); // Current directory
+{$ENDIF LINUX}
 end;
 
 procedure CopyTmpFiles;
@@ -3747,7 +3747,7 @@ var
   LField: TRttiField;
   LValue: TValue;
   LTypeData: PTypeData;
-  Buffer: Pointer;
+  LargestSetBuffer: array[0..31] of byte;
   Fmt: string;
 begin
   if Info = nil then
@@ -3766,10 +3766,10 @@ begin
       Result := '$' + IntToHex(NativeInt(PPointer(Value)^), SizeOf(Pointer) * 2);
 {$IFNDEF NEXTGEN}
     tkString: Result := string(PShortString(Value)^);
-    tkLString: Result := string(PAnsiString(Value)^);
     tkUString: Result := PUnicodeString(Value)^;
     tkWString: Result := string(PWideString(Value)^);
 {$ENDIF !NEXTGEN}
+    tkLString: Result := string(PUTF8String(Value)^);
     tkChar: Result := Char(MarshaledAString(Value)^);
     tkWChar: Result := PWideChar(Value)^;
     tkEnumeration: Result := GetEnumName(Info, PByte(Value)^);
@@ -3783,9 +3783,10 @@ begin
       end;
     tkSet:
       begin
-        I := 0;
-        Move(Value^, I, Size);
-        Result := SetToString(Info, I, True);
+        for I := 0 to SizeOf(LargestSetBuffer)-1 do
+          LargestSetBuffer[I] := 0;
+        Move(Value^, LargestSetBuffer, Size);
+        Result := SetToString(Info, @LargestSetBuffer, True);
       end;
     tkClass: Result := '$' + IntToHex(NativeInt(PPointer(Value)^), SizeOf(Pointer) * 2) +
       ' [' + PObject(Value)^.ClassName + ']';

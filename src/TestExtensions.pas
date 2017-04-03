@@ -217,12 +217,9 @@ type
 implementation
 
 uses
-  {$IFDEF LINUX}
-    Libc,
-  {$ENDIF}
-  {$IFDEF FASTMM}
-     FastMM4,
-  {$ENDIF}
+{$IFDEF FASTMM}
+   FastMM4,
+{$ENDIF}
 {$IFDEF CLR}
   SysUtils;
 {$ELSE !CLR}
@@ -409,6 +406,9 @@ end;
 function TMemoryTest.MemoryAllocated: TMemorySize;
 begin
 {$IFDEF ANDROID_FIXME}
+  Result := 0;
+{$ELSE IFDEF LINUX}
+                                                   
   Result := 0;
 {$ELSE}
   {$IFDEF FASTMM}
