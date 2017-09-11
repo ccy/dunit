@@ -24,7 +24,6 @@ object GUITestRunner: TGUITestRunner
     000000000000000000008001000080010000C0030000E0070000F81F0000}
   Menu = MainMenu
   OldCreateOrder = True
-  Scaled = False
   ShowHint = True
   OnCreate = FormCreate
   OnDestroy = FormDestroy
