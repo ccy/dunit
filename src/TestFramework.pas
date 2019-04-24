@@ -3805,7 +3805,8 @@ begin
           SetLength(Result, Length(Result) - 1);
         Result := Result + ')';
       end;
-    tkRecord:
+    tkRecord,
+    tkMRecord:
       begin
         Result := '(';
         LType := LContext.GetType(Info);
@@ -3874,7 +3875,8 @@ begin
             ' [' + Value.ClassName + ']';
         end;
       end;
-    tkRecord:
+    tkRecord,
+    tkMRecord:
       begin
         Result := '(';
         begin
