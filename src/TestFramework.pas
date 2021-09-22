@@ -553,6 +553,7 @@ type
     procedure CheckEquals(expected, actual: AnsiString; msg: string = ''); overload; virtual;
 {$ENDIF !CLR}
     procedure CheckEquals(expected, actual: Boolean; msg: string = ''); overload; virtual;
+    procedure CheckEquals(const expected, actual: TGUID; msg: string = ''); overload; virtual;
     procedure CheckEqualsBin(expected, actual: longword; msg: string = ''; digits: integer=32); virtual;
     procedure CheckEqualsHex(expected, actual: longword; msg: string = ''; digits: integer=8); virtual;
 
@@ -583,6 +584,7 @@ type
     procedure CheckNotEqualsMem(expected, actual: pointer; size:longword; msg:string=''); virtual;
 {$ENDIF !CLR}
     procedure CheckNotEquals(expected, actual: Boolean; msg: string = ''); overload; virtual;
+    procedure CheckNotEquals(expected, actual: TGUID; msg: string = ''); overload; virtual;
     procedure CheckNotEqualsBin(expected, actual: longword; msg: string = ''; digits: integer=32); virtual;
     procedure CheckNotEqualsHex(expected, actual: longword; msg: string = ''; digits: integer=8); virtual;
 
@@ -2571,6 +2573,20 @@ begin
   FCheckCalled := True;
   if (expected = actual) then
     FailEquals(BoolToStr(expected), BoolToStr(actual), msg, ReturnAddress);
+end;
+
+procedure TAbstractTest.CheckEquals(const expected, actual: TGUID; msg: string);
+begin
+  FCheckCalled := True;
+  if (expected <> actual) then
+    FailNotEquals(expected.ToString, actual.ToString, msg, ReturnAddress);
+end;
+
+procedure TAbstractTest.CheckNotEquals(expected, actual: TGUID; msg: string);
+begin
+  FCheckCalled := True;
+  if (expected = actual) then
+    FailEquals(expected.ToString, actual.ToString, msg, ReturnAddress);
 end;
 
 { [KGS] IntToBin: Elected not to add to TestFrameWork interface,
