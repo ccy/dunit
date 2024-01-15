@@ -116,6 +116,7 @@ type
   TTestMethod  = procedure of object;
 {$ENDIF}
   TTestProc    = procedure;
+  TTestAnonMethod = reference to procedure;
 
   TTestCaseClass  = class of TTestCase;
 
@@ -448,7 +449,8 @@ type
     // Object used by the GUI to map the test onto a GUI object such as a tree node
     FGUIObject: TObject;
 
-    procedure Invoke(AMethod: TTestMethod); virtual;
+    procedure Invoke(AMethod: TTestMethod); overload; virtual;
+    procedure Invoke(AMethod: TTestAnonMethod); overload; virtual;
     procedure RunWithFixture(testResult: TTestResult); virtual;
     procedure RunTest(testResult: TTestResult); virtual;
 
@@ -601,7 +603,8 @@ type
     procedure CheckNotNull(obj: TObject; msg: string = ''); overload; virtual;
     procedure CheckNull(obj: TObject; msg: string = ''); overload; virtual;
 
-    procedure CheckException(AMethod: TTestMethod; AExceptionClass: TClass; msg: string = '');
+    procedure CheckException(AMethod: TTestMethod; AExceptionClass: TClass; msg: string = ''); overload;
+    procedure CheckException(AMethod: TTestAnonMethod; AExceptionClass: TClass; msg: string = ''); overload;
     procedure CheckEquals(expected, actual: TClass; msg: string = ''); overload; virtual;
     procedure CheckInherits(expected, actual: TClass; msg: string = ''); overload; virtual;
     procedure CheckIs(AObject: TObject; AClass: TClass; msg: string = ''); overload; virtual;
@@ -689,6 +692,7 @@ type
     fMethod:    TTestMethod;
 
     procedure Invoke(AMethod: TTestMethod); override;
+    procedure Invoke(AMethod: TTestAnonMethod); override;
     procedure RunWithFixture(testResult: TTestResult); override;
     procedure RunTest(testResult: TTestResult); override;
   public
@@ -1984,6 +1988,11 @@ begin
   FTestMethodInvoked := False;
 end;
 
+procedure TAbstractTest.Invoke(AMethod: TTestAnonMethod);
+begin
+  FTestMethodInvoked := False;
+end;
+
 procedure TAbstractTest.Run(testResult: TTestResult);
 begin
   FailsOnNoChecksExecuted := testResult.FailsIfNoChecksExecuted;
@@ -2788,6 +2797,26 @@ begin
     FailNotEquals(AExceptionClass.ClassName, sExceptionNothig, msg, ReturnAddress)
 end;
 
+procedure TAbstractTest.CheckException(AMethod: TTestAnonMethod; AExceptionClass: TClass; msg :string);
+begin
+  FCheckCalled := True;
+  try
+    Invoke(AMethod);
+  except
+    on e :Exception do
+    begin
+      if  not Assigned(AExceptionClass) then
+        raise
+      else if not e.ClassType.InheritsFrom(AExceptionClass) then
+        FailNotEquals(AExceptionClass.ClassName, e.ClassName, msg, ReturnAddress)
+      else
+        AExceptionClass := nil;
+    end;
+  end;
+  if Assigned(AExceptionClass) then
+    FailNotEquals(AExceptionClass.ClassName, sExceptionNothig, msg, ReturnAddress)
+end;
+
 procedure TAbstractTest.CheckEquals(expected, actual: TClass; msg: string);
 begin
   FCheckCalled := True;
@@ -3066,6 +3095,12 @@ begin
 {$ELSE}
   AMethod;
 {$ENDIF}
+end;
+
+procedure TTestCase.Invoke(AMethod: TTestAnonMethod);
+begin
+  FTestMethodInvoked := True;
+  AMethod;
 end;
 
 procedure TTestCase.RunWithFixture(testResult: TTestResult);
@@ -3757,7 +3792,7 @@ class function TConverter<T>.ValueToString(Info: PTypeInfo; Size: Cardinal;
   Value: TValueData): string;
 {$IF DEFINED(MSWINDOWS) OR DEFINED(POSIX)}
 var
-  I, MinValue: Integer;
+  I: Integer;
   LType: TRttiType;
   LContext: TRttiContext;
   LField: TRttiField;
