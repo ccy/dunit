@@ -43,11 +43,7 @@ unit TestFramework;
 {$HPPEMIT '#ifdef USEPACKAGES'}
 {$HPPEMIT '  #pragma link "dunitrtl.bpi"'}
 {$HPPEMIT '#else'}
-{$IFDEF WIN32}
-{$HPPEMIT '  #pragma link "dunitrtl.lib"'}
-{$ELSE}
-{$HPPEMIT '  #pragma link "dunitrtl.a"'}
-{$ENDIF}
+{$HPPEMIT '  #pragma comment(lib, "dunitrtl")'}
 {$HPPEMIT '#endif'}
 
 {$IF CompilerVersion >= 24.0}
